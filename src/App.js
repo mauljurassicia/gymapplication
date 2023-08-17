@@ -1,25 +1,47 @@
-import logo from './logo.svg';
+import { Route, Routes } from 'react-router-dom';
+import { Box } from '@mui/material';
+import Navbar from './Components/Navbar';
+import ExerciseDetail from './pages/ExerciseDetail';
+import Home from './pages/Home';
+import Footer from './Components/Footer';
+import { createContext, useEffect, useState } from 'react';
+import { exercisesOptions, fetchData } from './utils/fetchData';
+
 import './App.css';
 
+export const ListExercisesContext = createContext()
+
 function App() {
+  const [listExercises, setListExercises] = useState([]);
+  const [bodyParts, setBodyParts] = useState([]);
+
+  useEffect(() => {
+    const fetchDataExerciseList = async () => {
+      const exercisesList = await fetchData('https://exercisedb.p.rapidapi.com/exercises', exercisesOptions);
+      setListExercises(exercisesList);
+
+      const bodyParts = await fetchData('https://exercisedb.p.rapidapi.com/exercises/bodyPartList', exercisesOptions);
+
+      setBodyParts(['all', ...bodyParts]);
+    }
+
+    fetchDataExerciseList()
+  }, [])
+
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <ListExercisesContext.Provider value={{listExercises, bodyParts}} >
+      <Box width='400px' sx={{ width: { xl: '1488px' } }} m="auto" >
+        <Navbar />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/exercise/:id' element={< ExerciseDetail />} />
+        </Routes>
+        <Footer />
+      </Box>
+    </ListExercisesContext.Provider>
+  )
 }
 
-export default App;
+export default App
